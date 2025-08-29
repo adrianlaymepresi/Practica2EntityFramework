@@ -2,7 +2,7 @@
 {
     public class Tarea
     {
-        public int idTarea { get; set; }
+        public int Id { get; set; }
         public string nombreTarea { get; set; }
         public DateTime fechaVencimientoTarea { get; set; }
         public string estadoTarea { get; set; } 
