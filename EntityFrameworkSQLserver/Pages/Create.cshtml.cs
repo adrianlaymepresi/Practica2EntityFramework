@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using EntityFrameworkSQLserver.Data;
+using EntityFrameworkSQLserver.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using EntityFrameworkSQLserver.Data;
-using EntityFrameworkSQLserver.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace EntityFrameworkSQLserver.Pages
 {
@@ -27,18 +28,93 @@ namespace EntityFrameworkSQLserver.Pages
         [BindProperty]
         public Tarea Tarea { get; set; } = default!;
 
-        // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
-            if (!ModelState.IsValid)
+            if (!ModelState.IsValid) return Page();
+            if (!ValidarTarea()) return Page();
+
+            try
             {
+                _context.Tareas.Add(Tarea);
+                await _context.SaveChangesAsync();
+                TempData["exito_creacion"] = true;
+                return RedirectToPage("./Index");
+            }
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo guardar la tarea en la base de datos. Intenta nuevamente.");
                 return Page();
             }
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Ocurrió un error inesperado. Intenta nuevamente.");
+                return Page();
+            }
+        }
 
-            _context.Tareas.Add(Tarea);
-            await _context.SaveChangesAsync();
+        private bool ValidarTarea()
+        {
+            var ok = true;
+            if (!ValidarNombre()) ok = false;
+            if (!ValidarFecha()) ok = false;
+            if (!ValidarEstado()) ok = false;
+            if (!ValidarIdUsuario()) ok = false;
+            return ok;
+        }
 
-            return RedirectToPage("./Index");
+        private bool ValidarNombre()
+        {
+            var nombre = Tarea.nombreTarea?.Trim() ?? "";
+            if (string.IsNullOrEmpty(nombre))
+            {
+                ModelState.AddModelError("Tarea.nombreTarea", "El nombre es obligatorio.");
+                return false;
+            }
+            if (nombre.Length < 9) // Ir a casa = 9 caracteres, no hay frase logica menor a esa cantidad
+            {
+                ModelState.AddModelError("Tarea.nombreTarea", "Debe tener al menos 9 caracteres.");
+                return false;
+            }
+            if (nombre.Length > 255) // En tema de Nombrar una Tarea no Deberia ser mas de eso, 
+            {
+                ModelState.AddModelError("Tarea.nombreTarea", "Máximo 255 caracteres.");
+                return false;
+            }
+            Tarea.nombreTarea = nombre;
+            return true;
+        }
+
+        private bool ValidarFecha()
+        {
+            var fecha = Tarea.fechaVencimientoTarea.Date;
+            if (fecha < DateTime.Today)
+            {
+                ModelState.AddModelError("Tarea.fechaVencimientoTarea", "La fecha debe ser hoy o futura.");
+                return false;
+            }
+            Tarea.fechaVencimientoTarea = fecha;
+            return true;
+        }
+
+        private bool ValidarEstado()
+        {
+            Tarea.estadoTarea = "Pendiente";
+            return true;
+        }
+
+        private bool ValidarIdUsuario()
+        {
+            if (Tarea.idUsuario <= 0)
+            {
+                ModelState.AddModelError("Tarea.idUsuario", "Debe ser un número positivo distinto a 0.");
+                return false;
+            }
+            if (Tarea.idUsuario.ToString().Length > 10)
+            {
+                ModelState.AddModelError("Tarea.idUsuario", "No debe exceder 10 dígitos.");
+                return false;
+            }
+            return true;
         }
     }
 }

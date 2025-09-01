@@ -24,40 +24,67 @@ namespace EntityFrameworkSQLserver.Pages
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                if (id == null)
+                {
+                    return NotFound();
+                }
 
-            var tarea = await _context.Tareas.FirstOrDefaultAsync(m => m.Id == id);
+                var tarea = await _context.Tareas.FirstOrDefaultAsync(m => m.Id == id);
 
-            if (tarea == null)
-            {
-                return NotFound();
+                if (tarea == null)
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    Tarea = tarea;
+                }
+                return Page();
             }
-            else
+            catch (Exception)
             {
-                Tarea = tarea;
-            }
-            return Page();
+                ModelState.AddModelError(string.Empty, "Ocurrió un error al cargar los datos.");
+                return Page();
+            }            
         }
 
         public async Task<IActionResult> OnPostAsync(int? id)
         {
-            if (id == null)
+            try
             {
-                return NotFound();
-            }
+                if (id == null)
+                {
+                    return NotFound();
+                }
 
-            var tarea = await _context.Tareas.FindAsync(id);
-            if (tarea != null)
+                var tarea = await _context.Tareas.FindAsync(id);
+                if (tarea != null)
+                {
+                    Tarea = tarea;
+                    _context.Tareas.Remove(Tarea);
+                    await _context.SaveChangesAsync();
+
+                }
+
+                return RedirectToPage("./Index");
+            }
+            catch (DbUpdateConcurrencyException)
             {
-                Tarea = tarea;
-                _context.Tareas.Remove(Tarea);
-                await _context.SaveChangesAsync();
+                ModelState.AddModelError(string.Empty, "Otro usuario modificó o eliminó esta tarea. Recarga la página.");
+                return Page();
             }
-
-            return RedirectToPage("./Index");
+            catch (DbUpdateException)
+            {
+                ModelState.AddModelError(string.Empty, "No se pudo eliminar la tarea. Intenta nuevamente.");
+                return Page();
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Ocurrió un error inesperado. Intenta nuevamente.");
+                return Page();
+            }
         }
     }
 }

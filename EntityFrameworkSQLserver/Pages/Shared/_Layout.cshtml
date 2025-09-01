@@ -11,8 +11,8 @@
 <body>
     <header class="top-header">
         <div class="container-fluid d-flex justify-content-between align-items-center">
-            <a class="navbar-brand titulo-app m-0 text-black" asp-area="" asp-page="/Index">Control de Tareas Personal</a>
-            <button id="toggleSidebar" class="btn btn-sm btn-toggle">☰ Toggle navegación</button>
+            <a class="navbar-brand titulo-app m-0 text-black" asp-area="" asp-page="/Index">CONTROL TAREAS 👤</a>
+            <button id="toggleSidebar" class="btn btn-sm btn-toggle">☰ MENU</button>
         </div>
     </header>
 
@@ -49,16 +49,14 @@
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var boton = document.getElementById('toggleSidebar');
-            if (boton) {
-                boton.addEventListener('click', function () {
-                    document.body.classList.toggle('sidebar-cerrado');
-                });
-            }
-        });
+        const boton = document.getElementById('toggleSidebar')
+        if (boton) {
+            boton.onclick = () => document.body.classList.toggle('sidebar-cerrado')
+        }
     </script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+
+        

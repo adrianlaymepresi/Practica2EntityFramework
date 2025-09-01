@@ -5,46 +5,118 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0 text-light">EDITAR TAREA</h2>
+        <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-secondary" asp-page="./Index">↩️ Volver</a>
+        </div>
+    </div>
 
-<h4>Tarea</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="card p-3" style="background:#0f1113; color:#f8f9fa; border:1px solid #2b2f33;">
+        <form method="post" class="row g-3 w-100">
             <input type="hidden" asp-for="Tarea.Id" />
-            <div class="form-group">
-                <label asp-for="Tarea.nombreTarea" class="control-label"></label>
-                <input asp-for="Tarea.nombreTarea" class="form-control" />
+
+            <div class="col-12">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            </div>
+
+            <div class="col-12">
+                <label asp-for="Tarea.nombreTarea" class="form-label m-0">
+                    Nombre de la Tarea
+                    <span id="contador_nombre" class="badge rounded-pill bg-secondary ms-2">255 restantes</span>
+                </label>
+                <textarea asp-for="Tarea.nombreTarea"
+                          class="form-control"
+                          maxlength="255"
+                          rows="1"
+                          required
+                          oninvalid="this.setCustomValidity('El nombre es obligatorio.')"
+                          oninput="this.setCustomValidity('')"
+                          style="overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; resize:none;"
+                          placeholder="Ejemplo minimo: Ir a Casa"></textarea>
                 <span asp-validation-for="Tarea.nombreTarea" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Tarea.fechaVencimientoTarea" class="control-label"></label>
-                <input asp-for="Tarea.fechaVencimientoTarea" class="form-control" />
+
+            <div class="col-12">
+                <label asp-for="Tarea.fechaVencimientoTarea" class="form-label m-0">Fecha de Vencimiento</label>
+                <input asp-for="Tarea.fechaVencimientoTarea"
+                       type="date"
+                       class="form-control"
+                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       required
+                       oninvalid="this.setCustomValidity('La fecha debe ser hoy o futura.')"
+                       oninput="this.setCustomValidity('')"
+                       onkeydown="return false"
+                       onclick="this.showPicker()" />
                 <span asp-validation-for="Tarea.fechaVencimientoTarea" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Tarea.estadoTarea" class="control-label"></label>
-                <input asp-for="Tarea.estadoTarea" class="form-control" />
+
+            <div class="col-12">
+                <label class="form-label m-0">Estado</label>
+                <select class="form-select" disabled>
+                    <option value="Pendiente" selected>Pendiente</option>
+                    <option value="En curso">En curso</option>
+                    <option value="Finalizado">Finalizado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+                <input type="hidden" asp-for="Tarea.estadoTarea" />
                 <span asp-validation-for="Tarea.estadoTarea" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="Tarea.idUsuario" class="control-label"></label>
-                <input asp-for="Tarea.idUsuario" class="form-control" />
+
+            <div class="col-12">
+                <label asp-for="Tarea.idUsuario" class="form-label m-0">
+                    ID del Usuario
+                    <span id="contador_id" class="badge rounded-pill bg-secondary ms-2">10 restantes</span>
+                </label>
+                <input asp-for="Tarea.idUsuario"
+                       class="form-control"
+                       inputmode="numeric"
+                       required
+                       oninvalid="this.setCustomValidity('El ID de usuario es obligatorio y debe tener hasta 10 dígitos.')"
+                       oninput="this.setCustomValidity('')"
+                       placeholder="ID del usuario asignado" />
                 <span asp-validation-for="Tarea.idUsuario" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+
+            <div class="col-12 d-flex justify-content-center gap-2 mt-2">
+                <a class="btn btn-outline-secondary" asp-page="./Index">Cancelar</a>
+                <button type="submit" class="btn btn-success">💾 Guardar cambios</button>
             </div>
         </form>
     </div>
 </div>
 
-<div>
-    <a asp-page="./Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+    (() => {
+        const ta = document.getElementById('Tarea_nombreTarea');
+        const idInput = document.getElementById('Tarea_idUsuario');
+        const badgeNombre = document.getElementById('contador_nombre');
+        const badgeId = document.getElementById('contador_id');
+        const maxNombre = 255;
+        const maxId = 10;
+
+        const ajustarTextarea = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+
+        const actualizarNombre = () => {
+            if (!ta) return;
+            if (ta.value.length > maxNombre) ta.value = ta.value.slice(0, maxNombre);
+            badgeNombre.textContent = (maxNombre - ta.value.length) + ' restantes';
+            ajustarTextarea();
+        };
+
+        const actualizarId = () => {
+            if (!idInput) return;
+            idInput.value = idInput.value.replace(/\D/g, '').slice(0, maxId);
+            badgeId.textContent = (maxId - idInput.value.length) + ' restantes';
+        };
+
+        if (ta) { actualizarNombre(); ta.addEventListener('input', actualizarNombre); }
+        if (idInput) { actualizarId(); idInput.addEventListener('input', actualizarId); }
+    })();
+    </script>
 }
+
+
