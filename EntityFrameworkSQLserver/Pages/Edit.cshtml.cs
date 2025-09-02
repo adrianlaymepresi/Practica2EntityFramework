@@ -123,9 +123,15 @@ namespace EntityFrameworkSQLserver.Pages
         private bool ValidarFecha()
         {
             var fecha = Tarea.fechaVencimientoTarea.Date;
+            var maxFecha = new DateTime(2100, 12, 31);
             if (fecha < DateTime.Today)
             {
                 ModelState.AddModelError("Tarea.fechaVencimientoTarea", "La fecha debe ser hoy o futura.");
+                return false;
+            }
+            if (fecha > maxFecha)
+            {
+                ModelState.AddModelError("Tarea.fechaVencimientoTarea", "La fecha no puede ser posterior al 31/12/2100.");
                 return false;
             }
             Tarea.fechaVencimientoTarea = fecha;
@@ -139,7 +145,7 @@ namespace EntityFrameworkSQLserver.Pages
                 ModelState.AddModelError("Tarea.idUsuario", "Debe ser un número positivo distinto a 0.");
                 return false;
             }
-            if (Tarea.idUsuario.ToString().Length > 10)
+            if (Tarea.idUsuario.ToString().Length > 9)
             {
                 ModelState.AddModelError("Tarea.idUsuario", "No debe exceder 10 dígitos.");
                 return false;

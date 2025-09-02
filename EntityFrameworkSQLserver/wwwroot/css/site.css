@@ -10,6 +10,13 @@ body {
     flex-direction: column;
 }
 
+.table td, .table th {
+    white-space: normal; /* permite múltiples líneas */
+    overflow-wrap: anywhere; /* rompe en cualquier punto si es necesario */
+    word-break: break-word; /* fallback para navegadores viejos */
+    hyphens: auto; /* agrega guion si es una palabra real */
+}
+
 .top-header {
     background: linear-gradient(90deg, #ffffff, #6c5ce7);
     color: #f8f9fa;

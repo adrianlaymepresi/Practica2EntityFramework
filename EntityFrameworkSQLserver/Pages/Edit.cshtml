@@ -44,6 +44,7 @@
                        type="date"
                        class="form-control"
                        min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                       max="@(new DateTime(2100, 12, 31).ToString("yyyy-MM-dd"))"
                        required
                        oninvalid="this.setCustomValidity('La fecha debe ser hoy o futura.')"
                        oninput="this.setCustomValidity('')"
@@ -73,7 +74,7 @@
                        class="form-control"
                        inputmode="numeric"
                        required
-                       oninvalid="this.setCustomValidity('El ID de usuario es obligatorio y debe tener hasta 10 dígitos.')"
+                       oninvalid="this.setCustomValidity('El ID de usuario es obligatorio y debe tener hasta 9 dígitos.')"
                        oninput="this.setCustomValidity('')"
                        placeholder="ID del usuario asignado" />
                 <span asp-validation-for="Tarea.idUsuario" class="text-danger"></span>
@@ -95,7 +96,7 @@
         const badgeNombre = document.getElementById('contador_nombre');
         const badgeId = document.getElementById('contador_id');
         const maxNombre = 255;
-        const maxId = 10;
+        const maxId = 9;
 
         const ajustarTextarea = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
 
