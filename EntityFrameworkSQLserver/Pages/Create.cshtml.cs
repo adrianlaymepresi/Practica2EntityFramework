@@ -38,7 +38,7 @@ namespace EntityFrameworkSQLserver.Pages
                 _context.Tareas.Add(Tarea);
                 await _context.SaveChangesAsync();
                 TempData["exito_creacion"] = true;
-                return RedirectToPage("./Index");
+                return RedirectToPage("./Index"); // return Page();
             }
             catch (DbUpdateException)
             {
@@ -59,6 +59,19 @@ namespace EntityFrameworkSQLserver.Pages
             if (!ValidarFecha()) ok = false;
             if (!ValidarEstado()) ok = false;
             if (!ValidarIdUsuario()) ok = false;
+
+            if (ok)
+            {
+                // OJO: como ValidarTarea es sync, hacemos un GetAwaiter().
+                var duplicada = ExisteTareaDuplicadaAsync(Tarea.nombreTarea, Tarea.fechaVencimientoTarea, Tarea.idUsuario, Tarea.estadoTarea)
+                    .GetAwaiter().GetResult();
+
+                if (duplicada)
+                {
+                    ModelState.AddModelError(string.Empty, "Ya existe una tarea exactamente igual con el mismo nombre, fecha, estado y usuario.");
+                    ok = false;
+                }
+            }
             return ok;
         }
 
@@ -115,6 +128,17 @@ namespace EntityFrameworkSQLserver.Pages
                 return false;
             }
             return true;
+        }
+
+        // EXTRA POR SI EXISTIERA TAREA DUPLICADA
+        private async Task<bool> ExisteTareaDuplicadaAsync(string nombre, DateTime fecha, int idUsuario, string estadoTarea)
+        {
+            var n = nombre.ToLowerInvariant();
+            return await _context.Tareas.AsNoTracking()
+                .AnyAsync(t => t.idUsuario == idUsuario
+                               && t.fechaVencimientoTarea.Date == fecha.Date
+                               && t.estadoTarea == estadoTarea
+                               && (t.nombreTarea ?? "").ToLower() == n);
         }
     }
 }

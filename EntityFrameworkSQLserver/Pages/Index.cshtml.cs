@@ -48,7 +48,12 @@ namespace EntityFrameworkSQLserver.Pages
                 var termino = (TextoBusqueda ?? "").Trim();
                 var terminoNorm = NormalizarTexto(termino);
 
-                var todas = await _context.Tareas.AsNoTracking().ToListAsync();
+                var estados = new[] { "pendiente", "en curso" };
+
+                var todas = await _context.Tareas
+                    .AsNoTracking()
+                    .Where(t => estados.Contains(t.estadoTarea.ToLower()))
+                    .ToListAsync();
 
                 IEnumerable<Tarea> fuente;
                 if (terminoNorm.Length == 0)

@@ -39,7 +39,7 @@ namespace EntityFrameworkSQLserver.Pages
             var original = await _context.Tareas.AsNoTracking().FirstOrDefaultAsync(t => t.Id == Tarea.Id);
             if (original == null) return NotFound();
 
-            if (!ValidarEdicion(original)) return Page();
+            if (!await ValidarEdicionAsync(original)) return Page();
 
             try
             {
@@ -70,12 +70,30 @@ namespace EntityFrameworkSQLserver.Pages
             }
         }
 
-        private bool ValidarEdicion(Tarea original)
+        private async Task<bool> ValidarEdicionAsync(Tarea original)
         {
             var ok = true;
             if (!ValidarNombre()) ok = false;
             if (!ValidarFecha()) ok = false;
             if (!ValidarIdUsuario()) ok = false;
+
+            if (ok)
+            {
+                var duplicada = await ExisteTareaDuplicadaAsync(
+                    Tarea.nombreTarea?.Trim() ?? "",
+                    Tarea.fechaVencimientoTarea.Date,
+                    Tarea.idUsuario,
+                    original.estadoTarea,
+                    original.Id
+                );
+
+                if (duplicada)
+                {
+                    ModelState.AddModelError(string.Empty, "Ya existe una tarea con el mismo nombre, fecha, estado y usuario.");
+                    ok = false;
+                }
+            }
+
             Tarea.estadoTarea = original.estadoTarea;
             return ok;
         }
@@ -127,6 +145,21 @@ namespace EntityFrameworkSQLserver.Pages
                 return false;
             }
             return true;
+        }
+
+        // EXTRA POR SI EXISTIERA TAREA DUPLICADA
+        private async Task<bool> ExisteTareaDuplicadaAsync(string nombre, DateTime fecha, int idUsuario, string estadoTarea, int excluirId)
+        {
+            var n = (nombre ?? "").Trim().ToLowerInvariant();
+
+            return await _context.Tareas.AsNoTracking()
+                .AnyAsync(t =>
+                    t.Id != excluirId &&
+                    t.idUsuario == idUsuario &&
+                    t.fechaVencimientoTarea.Date == fecha.Date &&
+                    t.estadoTarea == estadoTarea &&
+                    (t.nombreTarea ?? "").ToLower() == n
+                );
         }
     }
 }

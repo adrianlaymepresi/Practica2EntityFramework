@@ -1,13 +1,13 @@
 ﻿@page
-@model EntityFrameworkSQLserver.Pages.IndexModel
+@model EntityFrameworkSQLserver.Pages.FinalizadasModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Finalizadas";
 }
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="m-0 text-light">TAREAS ASIGNADAS</h2>
+        <h2 class="m-0 text-light">TAREAS FINALIZADAS</h2>
         <form method="get" class="d-flex align-items-center gap-2">
             <label for="cantidadRegistrosPorPagina" class="text-light m-0 text-nowrap">Tareas por página</label>
             <input id="cantidadRegistrosPorPagina"
@@ -24,7 +24,6 @@
             <input type="hidden" name="pagina" value="1" />
             <input type="hidden" name="q" value="@(Model.TextoBusqueda)" />
             <button type="submit" class="btn btn-sm btn-primary text-nowrap">👁️ Aplicar</button>
-            <a class="btn btn-sm btn-success text-nowrap" asp-page="./Create">➕ Nueva Tarea</a>
         </form>
     </div>
 
@@ -38,7 +37,7 @@
                    value="@(Model.TextoBusqueda)"
                    placeholder="🔍 Escribe para filtrar…"
                    autocomplete="off"
-                   style="width: 250px;" 
+                   style="width: 250px;"
                    maxlength="100" />
             <input type="hidden" name="cantidadRegistrosPorPagina" value="@(Model.CantidadRegistrosPorPagina)" />
             <input type="hidden" name="pagina" value="1" />
@@ -48,55 +47,47 @@
     <!-- PAGINADO (ARRIBA) -->
     <nav class="mb-3">
         <ul class="pagination justify-content-center flex-wrap gap-1">
-
-            <!-- Anterior -->
             <li class="page-item @(Model.HasPrevPage ? "" : "disabled")">
                 <a class="page-link"
-                   asp-page="./Index"
+                   asp-page="./Finalizadas"
                    asp-route-pagina="@(Model.PaginaActual - 1)"
                    asp-route-cantidadRegistrosPorPagina="@Model.CantidadRegistrosPorPagina"
                    asp-route-q="@(Model.TextoBusqueda)">« Anterior</a>
             </li>
 
-            <!-- Siempre mostrar 1 -->
             <li class="page-item @(Model.PaginaActual == 1 ? "active" : "")">
                 <a class="page-link"
-                   asp-page="./Index"
+                   asp-page="./Finalizadas"
                    asp-route-pagina="1"
                    asp-route-cantidadRegistrosPorPagina="@Model.CantidadRegistrosPorPagina"
                    asp-route-q="@(Model.TextoBusqueda)">1</a>
             </li>
 
-            <!-- Separador si la ventana no empieza en 1 -->
             @if (Model.PageWindowStart > 1)
             {
                 <li class="page-item disabled"><span class="page-link">…</span></li>
             }
 
-            <!-- Ventana de 10 páginas -->
             @for (int i = Model.PageWindowStart; i <= Model.PageWindowEnd; i++)
             {
                 if (i == 1) { continue; }
-                <!-- evitar duplicar el 1 -->
                 <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
                     <a class="page-link"
-                       asp-page="./Index"
+                       asp-page="./Finalizadas"
                        asp-route-pagina="@i"
                        asp-route-cantidadRegistrosPorPagina="@Model.CantidadRegistrosPorPagina"
                        asp-route-q="@(Model.TextoBusqueda)">@i</a>
                 </li>
             }
 
-            <!-- Separador si hay páginas después de la ventana -->
             @if (Model.PageWindowEnd < Model.CantidadTotalPaginas)
             {
                 <li class="page-item disabled"><span class="page-link">…</span></li>
             }
 
-            <!-- Siguiente -->
             <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
                 <a class="page-link"
-                   asp-page="./Index"
+                   asp-page="./Finalizadas"
                    asp-route-pagina="@(Model.PaginaActual + 1)"
                    asp-route-cantidadRegistrosPorPagina="@Model.CantidadRegistrosPorPagina"
                    asp-route-q="@(Model.TextoBusqueda)">Siguiente »</a>
@@ -133,9 +124,9 @@
                             <td class="text-white"><span class="@claseEstado">@item.estadoTarea</span></td>
                             <td class="text-white">@item.idUsuario</td>
                             <td class="d-flex justify-content-center gap-2">
-                                <a class="btn btn-sm btn-success" asp-page="./Edit" asp-route-id="@item.Id">✅ Editar</a>
-                                <a class="btn btn-sm btn-secondary" asp-page="./Details" asp-route-id="@item.Id">🔎 Detalles</a>
-                                <a class="btn btn-sm btn-danger" asp-page="./Delete" asp-route-id="@item.Id">🗑️ Eliminar</a>
+                                <button type="button" class="btn btn-sm btn-outline-warning" title="Cambiar estado (sin funcionalidad)">
+                                    ⏳ Cambiar estado
+                                </button>
                             </td>
                         </tr>
                     }
@@ -164,6 +155,10 @@
                 campoBusqueda.addEventListener('input', () => {
                     clearTimeout(temporizadorEspera);
                     temporizadorEspera = setTimeout(() => {
+                        campoBusqueda.value = campoBusqueda.value
+                          .replace(/[\u0000-\u001F\u007F]/g, '')
+                          .slice(0, 100)
+                          .trim();
                         formularioBusqueda.querySelector('input[name="pagina"]').value = "1";
                         formularioBusqueda.submit();
                     }, esperaMilisegundos);
